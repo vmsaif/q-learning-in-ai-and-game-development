@@ -59,8 +59,8 @@ public class Enemy {
         stopWander = false;
         xSpeed = 0.25;
         ySpeed = 0.25;
-        leaderXSpeed = 0.25;
-        leaderYSpeed = 0.25;
+        leaderXSpeed = 0.8;
+        leaderYSpeed = 0.8;
         maxSpeed = 3.75;
         arriving = false;
         flee = false;
@@ -116,20 +116,25 @@ public class Enemy {
         
         if(leader && !flee) {   
             angle = Math.toDegrees(Math.atan2(game.getCenterY() - y, game.getCenterX() - x));                
-            // angle += 90;
-            
+             
+            // if the distance is greater than leaderDistanceFromCenter, then move the leader towards the center of the screen until it reaches 250.
             if(distance > leaderDistanceFromCenter) {
                 // random between 70 and 90
                 angle = angle + movingInAngle;
             } else {
                 angle = angle + movingFixedAngle;
             }
-        
+            
             x += leaderXSpeed * Math.cos(Math.toRadians(angle));
             y += leaderYSpeed * Math.sin(Math.toRadians(angle));
-            
-            // if the distance is greater than 250, then move the leader towards the center of the screen until it reaches 250.
+        
         }
+    }
+
+    public double calculateSpeed(double x1, double y1, double x2, double y2, double time) {
+        double distance = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+        double speed = distance / time;
+        return speed;
     }
 
     public void move(TowerGame game) {
@@ -137,7 +142,6 @@ public class Enemy {
         if(flee && inSquad()){
             x += fleeSpeedX * Math.cos(Math.toRadians(angle));
             y += fleeSpeedY * Math.sin(Math.toRadians(angle));
-            
         } else if(!leader){
             if(!arriving) { // meaning, simply wandering.
 
@@ -152,7 +156,6 @@ public class Enemy {
                 if(y < 0 || y > game.getHeight()) {
                     ySpeed = -ySpeed;
                 }
-
             } else if(arriving){ // meaning, arriving to a target.
                 Formation formation = this.getFormation(game.getAllFormations());
                 formation.promoteLeader();
@@ -168,6 +171,7 @@ public class Enemy {
                 targetY = target.getY();
 
                 arrive(targetX, targetY);
+                
             }
         }
     }
@@ -285,6 +289,7 @@ public class Enemy {
 
     public void setLeader(){
         leader = true;
+        resetArriving();
     }
 
     public void stopWandering() {
@@ -310,5 +315,27 @@ public class Enemy {
 
     public Enemy getPosition(){
         return new Enemy(x, y);
+    }
+
+    public double getLeaderXSpeed(){
+    return leaderXSpeed;
+    }
+
+    public double getLeaderYSpeed(){
+        return leaderYSpeed;
+    }
+
+    public double getDistanceToTarget() {
+        // return distance between this enemy and the center tower.
+        double distance = Integer.MAX_VALUE;
+        if(isLeader()){
+            return Math.sqrt(Math.pow(x - game.getCenterX(), 2) + Math.pow(y - game.getCenterY(), 2));
+        }
+        return distance;
+    }
+
+    public void setLeaderSpeed(double bestSpeedX, double bestSpeedY) {
+        leaderXSpeed = bestSpeedX;
+        leaderYSpeed = bestSpeedY;
     }
 }//class

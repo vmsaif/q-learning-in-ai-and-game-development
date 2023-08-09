@@ -13,10 +13,11 @@ public class Formation {
 
     private ArrayList<Enemy> enemyGroup;
     private boolean hasLeader;
-    
+    private QLearning qLearning;
     public Formation() {
         enemyGroup = new ArrayList<Enemy>();
         hasLeader = false;
+        qLearning = new QLearning(0.01, 0.9, 0.1);
     }
 
     public void addEnemy(Enemy enemy) {
@@ -79,5 +80,23 @@ public class Formation {
             enemy.flee();
             enemy.stopWandering();
         }
+    }
+
+    public double getDistanceToTarget() {
+        double distance = 0;
+        if(hasLeader){
+            distance = getLeader().getDistanceToTarget();
+        }
+        return distance;
+    }
+
+    public void setLeaderSpeed(double bestSpeed) {
+        if(hasLeader){
+            getLeader().setLeaderSpeed(bestSpeed, bestSpeed);
+        }
+    }
+
+    public QLearning getQLearning() {
+        return qLearning;
     }
 }

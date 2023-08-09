@@ -18,10 +18,20 @@ public class Projectile extends JPanel{
     private double angle;
     private double speed;
     private int size = 5;
-    
+    private Enemy projectileOwner;
+
+
     public Projectile(double x, double y, double angle, int speed) {
-        this.x = x;
-        this.y = y;
+        this.x = projectileOwner.getX();
+        this.y = projectileOwner.getY();
+        this.angle = angle;
+        this.speed = speed;
+    }
+
+    public Projectile(Enemy enemy, double angle, int speed) {
+        this.projectileOwner = enemy;
+        this.x = projectileOwner.getX();
+        this.y = projectileOwner.getY();
         this.angle = angle;
         this.speed = speed;
     }
@@ -56,4 +66,7 @@ public class Projectile extends JPanel{
         return (int)y;
     }
 
+    public Enemy getOwner() {
+        return projectileOwner;
+    }
 }

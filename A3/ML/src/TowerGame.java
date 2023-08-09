@@ -272,9 +272,16 @@ public class TowerGame extends JPanel {
                     double dx = centerX - currEnemy.getX();
                     double dy = centerY - currEnemy.getY();
                     double angle = Math.toDegrees(Math.atan2(dy, dx));
+
+                    // calculate the error based on the move speed of the enemy leader
+                    Enemy leader = currEnemy.getFormation(allFormations).getLeader();
+                    error = (leader.getLeaderXSpeed() + leader.getLeaderYSpeed()) / 0.3;
                     angle += error; // add the error to the angle
-                    Projectile projectile = new Projectile(currEnemy.getX(), currEnemy.getY(), angle, enemyProjectileSpeed);
+                
+                    angle += error; // add the error to the angle
+                    Projectile projectile = new Projectile(currEnemy, angle, enemyProjectileSpeed);
                     enemyProjectiles.add(projectile); 
+                  
                 }
             }
         }
@@ -306,13 +313,12 @@ public class TowerGame extends JPanel {
     // remove the projectile if it is out of the screen or if it hit an enemy or the tower
     private void removeProjectileIf(Projectile currentBullet, int i, int targetType, ArrayList<Projectile> removingArrayList) {
 
-        if (currentBullet.isOutOfBounds(getWidth(), getHeight())) {
-            removingArrayList.remove(i);
-            i--;
-        } else {
-
-            // check if the bullet hit an enemy
-            if(targetType == ENEMY){
+        // check if the bullet hit an enemy
+        if(targetType == ENEMY){
+            if (currentBullet.isOutOfBounds(getWidth(), getHeight())) {
+                removingArrayList.remove(i);
+                i--;
+            } else {
                 for (int j = 0; j < enemies.size(); j++) {
                     Enemy enemy = enemies.get(j);
                     
@@ -338,22 +344,41 @@ public class TowerGame extends JPanel {
                         
                     }
                 }
-
-            } else if (targetType == TOWER){
-                
-                // check if the enemy bullet hit the tower
-                if (isInsideOval(currentBullet.getIntProjectileX(), currentBullet.getIntProjectileY(), centerX, centerY, towerRadius*2)) {
-                    removingArrayList.remove(i);
-                    towerHealth -= enemyAttackPower; // reduce the tower's health by 10
-
-                    if(i > 0)
-                    {
-                        i--;
-                    }
-                }
-                
             }
-        }//else
+
+        } else if (targetType == TOWER) {
+            boolean bulletMissed = false; // initializing a boolean variable to track whether the projectile missed the target
+            boolean hitTarget = false; // initializing a boolean variable to track whether the projectile hit a target
+
+            if (currentBullet.isOutOfBounds(getWidth(), getHeight())) {
+                removingArrayList.remove(i);
+                bulletMissed = true;
+                i--;
+            }
+            // check if the enemy bullet hit the tower
+            if (isInsideOval(currentBullet.getIntProjectileX(), currentBullet.getIntProjectileY(), centerX, centerY, towerRadius*2)) {
+                hitTarget = true;
+                removingArrayList.remove(i);
+                towerHealth -= enemyAttackPower; // reduce the tower's health by 10
+
+                if(i > 0)
+                {
+                    i--;
+                }
+            }
+
+            if( bulletMissed || hitTarget ) {
+                
+                // start q learning
+                Formation formation = currentBullet.getOwner().getFormation(allFormations);
+                double distanceToTarget = formation.getDistanceToTarget();
+                Enemy leader = formation.getLeader();
+                double bestSpeed = formation.getQLearning().getBestSpeed(leader, distanceToTarget, hitTarget);
+                formation.setLeaderSpeed(bestSpeed);
+                System.out.println("Best speed: " + bestSpeed);
+            }
+        }
+        
     }
 
     private boolean checkGameOver() {
