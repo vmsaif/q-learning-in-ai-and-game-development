@@ -31,6 +31,8 @@ double newQValue = (1-learningRate) * qValue + learningRate * (reward + discount
 - Then it updates the q value in the hashmap.
 - Then it returns the best speed so far.
 
+Note: I have user System.out.println() to print the q values(optimized speed) in the console. You can see the values in the console while running the game. However, It won't be visible in the jar file.
+
 ## How to Compile and Run
 
 - Navigate to the root directory of the project in your terminal.
