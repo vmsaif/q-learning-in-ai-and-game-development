@@ -1,11 +1,15 @@
 /* -----------------------------------------------------------------------------
     Author: Saif Mahmud
-    Date: 2023-17-07
+    Date: 2023-06-08 (yyyy-dd-mm)
     Course: COMP 452
     Student ID: 3433058
-    Assignment: 1
-    Description: Creating a tower defense game with the implementation of Basic steering behaviors such as wander, arrive, flee and a complex steering behavior of formation.
-    Class Description: This is the projectile class that creates the projectile object.
+    Assignment: 3
+    Question: 2
+    Description: 
+    
+    Projectile class for the game. This class is used to create
+    projectiles for the enemies and the player. The projectile
+    will move in the direction of the angle it was fired at.
 */
 import java.awt.Color;
 import java.awt.Graphics;
@@ -22,8 +26,8 @@ public class Projectile extends JPanel{
 
 
     public Projectile(double x, double y, double angle, int speed) {
-        this.x = projectileOwner.getX();
-        this.y = projectileOwner.getY();
+        this.x = x;
+        this.y = y;
         this.angle = angle;
         this.speed = speed;
     }

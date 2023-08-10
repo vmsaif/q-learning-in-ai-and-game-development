@@ -1,3 +1,14 @@
+/* -----------------------------------------------------------------------------
+    Author: Saif Mahmud
+    Date: 2023-06-08 (yyyy-dd-mm)
+    Course: COMP 452
+    Student ID: 3433058
+    Assignment: 3
+    Question: 2
+    Description: 
+    
+    This program is a tower defense game.
+*/
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -49,23 +60,39 @@ public class TowerGame extends JPanel {
     private int enemyFireTimer; // current time since last enemy shot
 
     private int towerHealth; // initial tower health
+    private int initialTowerHealth;
     private int healthBarWidth; // width of the health bar
     private int healthBarHeight; // height of the health bar
     private int healthBarX; // x position of the health bar
     private int healthBarY; // y position of the health bar
     private int enemyAttackPower; 
     private int formationManLimit; // max number of enemies in a formation
-    private int numberOfEnemySpawn; // number of enemies to spawn
-    private ArrayList<Formation> allFormations; // list of all formations
+    private int numberOfEnemySpawnInOneSet; // number of enemies to spawn
+    private static ArrayList<Formation> allFormations; // list of all formations
     private int minEnemiesBeforeFlee; // min number of enemies before fleeing
     private boolean win;
     private boolean loose;
     private AudioInputStream bgMusic;
     private int shootingErrorMargin;
     private double error; 
+    private int spawnCount;
 
     public TowerGame() throws LineUnavailableException, IOException{
 
+        // --------------------------------------------------------------------
+        // to make the game keep running to see the adjustments of the q learning algorithm, 
+        // Either increase 
+        
+        //how many times whole enemy set will be spawned
+        spawnCount = 1;
+        numberOfEnemySpawnInOneSet = 20; 
+
+        // or increase the tower health
+        towerHealth = 2000; // I think 2000 is a good number to see the adjustments of the q learning algorithm
+        
+        // --------------------------------------------------------------------
+        
+        // a random number generator
         random = new Random();
 
         gunLength = 50;
@@ -88,16 +115,17 @@ public class TowerGame extends JPanel {
         enemyFireDelay = 700; // delay between enemy shots in milliseconds
         enemyFireTimer = 0; // current time since last enemy shot
 
-        towerHealth = 100; // initial tower health
+        
+        initialTowerHealth = towerHealth;
         healthBarWidth = 200; // width of the health bar
         healthBarHeight = 20; // height of the health bar
         healthBarX = 25; // x position of the health bar
         healthBarY = 25; // y position of the health bar
 
         enemyAttackPower = 10;
-        numberOfEnemySpawn = 12;
-        formationManLimit = 4;
-        minEnemiesBeforeFlee = 2;
+        
+        formationManLimit = numberOfEnemySpawnInOneSet/3;
+        minEnemiesBeforeFlee = formationManLimit/2;
         
         win = false;
         loose = false;
@@ -157,7 +185,7 @@ public class TowerGame extends JPanel {
             }
 
         });
-    }
+    }// end of constructor
 
     // audio loader
     private AudioInputStream loadSound(File filename) throws UnsupportedAudioFileException, IOException {
@@ -203,9 +231,10 @@ public class TowerGame extends JPanel {
             projectiles.get(i).draw(g); // draw the projectile
         }
 
-        if (!enemiesSpawned) {
+        if (!enemiesSpawned || (enemies.size() < 3 && spawnCount > 0)) {
             spawnEnemies();
             enemiesSpawned = true;
+            spawnCount--;
         }
 
         // draw the enemies
@@ -222,7 +251,8 @@ public class TowerGame extends JPanel {
         g.setColor(Color.RED);
         g.fillRect(healthBarX, healthBarY, healthBarWidth, healthBarHeight);
         g.setColor(Color.GREEN);
-        g.fillRect(healthBarX, healthBarY, (int) (healthBarWidth * ((double) towerHealth / 100)), healthBarHeight);
+        
+        g.fillRect(healthBarX, healthBarY, (int) (healthBarWidth * ((double) towerHealth / initialTowerHealth)), healthBarHeight);
 
         printGameOver(g);
     }
@@ -271,17 +301,16 @@ public class TowerGame extends JPanel {
                 if (currEnemy.canShoot()) {
                     double dx = centerX - currEnemy.getX();
                     double dy = centerY - currEnemy.getY();
-                    double angle = Math.toDegrees(Math.atan2(dy, dx));
+                    double shootingAngle = Math.toDegrees(Math.atan2(dy, dx));
 
                     // calculate the error based on the move speed of the enemy leader
                     Enemy leader = currEnemy.getFormation(allFormations).getLeader();
-                    error = (leader.getLeaderXSpeed() + leader.getLeaderYSpeed()) / 0.3;
-                    angle += error; // add the error to the angle
+                    double distanceToTower = Math.sqrt(Math.pow(centerX - leader.getX(), 2) + Math.pow(centerY - leader.getY(), 2));
+                    error = (leader.getLeaderXSpeed() + leader.getLeaderYSpeed()) / (distanceToTower / 1000);
+                    shootingAngle += error; // add the error to the angle
                 
-                    angle += error; // add the error to the angle
-                    Projectile projectile = new Projectile(currEnemy, angle, enemyProjectileSpeed);
+                    Projectile projectile = new Projectile(currEnemy, shootingAngle, enemyProjectileSpeed);
                     enemyProjectiles.add(projectile); 
-                  
                 }
             }
         }
@@ -371,11 +400,12 @@ public class TowerGame extends JPanel {
                 
                 // start q learning
                 Formation formation = currentBullet.getOwner().getFormation(allFormations);
-                double distanceToTarget = formation.getDistanceToTarget();
-                Enemy leader = formation.getLeader();
-                double bestSpeed = formation.getQLearning().getBestSpeed(leader, distanceToTarget, hitTarget);
-                formation.setLeaderSpeed(bestSpeed);
-                System.out.println("Best speed: " + bestSpeed);
+                if(formation != null){
+                    Enemy leader = formation.getLeader();
+                    double bestSpeed = formation.getQLearning().getBestSpeed(leader, hitTarget);
+                    formation.setLeaderSpeed(bestSpeed);
+                    System.out.println("Best speed: " + bestSpeed);
+                }
             }
         }
         
@@ -450,7 +480,6 @@ public class TowerGame extends JPanel {
                 if(tempFormation != null){
                     if(tempFormation.hasLeader() == false){
                         tempFormation.promoteLeader();
-                         
                     }
                 }
 
@@ -528,7 +557,7 @@ public class TowerGame extends JPanel {
     // spawn 10 enemies at random locations outside the vision zone
     private void spawnEnemies() {
         
-        for (int i = 0; i < numberOfEnemySpawn; i++) {
+        for (int i = 0; i < numberOfEnemySpawnInOneSet; i++) {
             double x, y;
             do {
                 x = random.nextDouble() * getWidth();
@@ -546,7 +575,9 @@ public class TowerGame extends JPanel {
         return distance < diameter / 2;
     }
 
-    public ArrayList<Formation> getAllFormations() {
+    public static ArrayList<Formation> getAllFormations() {
         return allFormations;
     }
+
+    
 }//class

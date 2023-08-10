@@ -1,11 +1,11 @@
 /* -----------------------------------------------------------------------------
     Author: Saif Mahmud
-    Date: 2023-17-07
+    Date: 2023-06-08 (yyyy-dd-mm)
     Course: COMP 452
     Student ID: 3433058
-    Assignment: 1
-    Description: Creating a tower defense game with the implementation of Basic steering behaviors such as wander, arrive, flee and a complex steering behavior of formation.
-    Class Description: This is the main class that runs the game.
+    Assignment: 3
+    Question: 2
+    Description: Main class to run the game.
 */
 
 import java.io.IOException;

@@ -1,11 +1,10 @@
 /* -----------------------------------------------------------------------------
     Author: Saif Mahmud
-    Date: 2023-17-07
+    Date: 2023-06-08 (yyyy-dd-mm)
     Course: COMP 452
     Student ID: 3433058
-    Assignment: 1
-    Description: Creating a tower defense game with the implementation of Basic steering behaviors such as wander, arrive, flee and a complex steering behavior of formation.
-    Class Description: This class creates the formation of enemies.
+    Assignment: 3
+    Question: 2
 */
 import java.util.ArrayList;
 
@@ -14,10 +13,16 @@ public class Formation {
     private ArrayList<Enemy> enemyGroup;
     private boolean hasLeader;
     private QLearning qLearning;
+    private ArrayList<Boolean> hitMissList;
+    private Double formationSpeed;
+
     public Formation() {
+        formationSpeed = 0.8;
         enemyGroup = new ArrayList<Enemy>();
+        hitMissList = new ArrayList<Boolean>();
         hasLeader = false;
-        qLearning = new QLearning(0.01, 0.9, 0.1);
+        qLearning = new QLearning(0.7, 0.9, 0.5);
+        
     }
 
     public void addEnemy(Enemy enemy) {
@@ -42,6 +47,7 @@ public class Formation {
         if(enemyGroup.size() > 0){
             Enemy leader = enemyGroup.get(0);
             leader.setLeader();
+            leader.setLeaderSpeed(formationSpeed, formationSpeed);
             leader.resetArriving();
             getLeader().moveLeader();
             hasLeader = true;
@@ -93,10 +99,38 @@ public class Formation {
     public void setLeaderSpeed(double bestSpeed) {
         if(hasLeader){
             getLeader().setLeaderSpeed(bestSpeed, bestSpeed);
+            formationSpeed = bestSpeed;
         }
     }
 
     public QLearning getQLearning() {
         return qLearning;
+    }
+
+    public void addHitMiss(boolean hitMiss) {
+        hitMissList.add(hitMiss);
+    }
+
+    // used for bonus point in the qvalue.
+    public boolean hitInARow(int num) {
+        boolean hitInRow = false;
+        int count = 0;
+        for(int i = hitMissList.size() - 1; i >= 0 && !hitInRow; i--) {
+            if(hitMissList.get(i)) {
+                count++;
+            }
+            if(count == num) {
+                hitInRow = true;
+            }
+        }
+        return hitInRow;
+    }
+
+    public void setFormationSpeed(double speed) {
+        formationSpeed = speed;
+    }
+
+    public double getFormationSpeed() {
+        return formationSpeed;
     }
 }

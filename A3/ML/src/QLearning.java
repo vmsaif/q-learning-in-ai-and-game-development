@@ -1,3 +1,14 @@
+/* -----------------------------------------------------------------------------
+    Author: Saif Mahmud
+    Date: 2023-06-08 (yyyy-dd-mm)
+    Course: COMP 452
+    Student ID: 3433058
+    Assignment: 3
+    Question: 2
+    Description: 
+    
+    QLearning class to implement the Q-learning algorithm.
+*/
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -8,6 +19,7 @@ public class QLearning {
     private double discountFactor; // discount factor
     private double explorationRate; // exploration rate
     private Random random; // random number generator
+    private Enemy leader; // the leader
     
     public QLearning(double learningRate, double discountFactor, double explorationRate) {
         qValues = new HashMap<>();
@@ -17,19 +29,21 @@ public class QLearning {
         random = new Random();
     }
     
-    public double getBestSpeed(Enemy leader, double distanceToTarget, boolean hitTarget) {
-        double bestSpeed = leader.getLeaderXSpeed();
-        double maxQValue = Double.NEGATIVE_INFINITY;
+    public double getBestSpeed(Enemy leader, boolean hitTarget) {
+        this.leader = leader;
+        double bestSpeed = leader.getLeaderSpeed();
+        double maxQValue;
         double reward = 0;
         // iterate over all speeds and get the best speed based on the Q-values
-        for (Map.Entry<Double, Double> entry : qValues.entrySet()) {
-            double speed = entry.getKey();
-            double qValue = entry.getValue();
+        for (int i = 0; i < qValues.size(); i++) {
+            double speed = (double) qValues.keySet().toArray()[i];
+            double qValue = (double) qValues.values().toArray()[i];
 
             // if the speed is too high or too low, set it to the maximum or minimum speed
-            if(speed > 1.3){
+            double formationSpeed = leader.getFormation(TowerGame.getAllFormations()).getFormationSpeed();
+            if(speed > formationSpeed){
                 qValues.remove(speed);
-                speed = 1.3;
+                speed = formationSpeed;
                 qValues.put(speed, qValue);
             } else if(speed < 0.01){
                 qValues.remove(speed);
@@ -46,34 +60,46 @@ public class QLearning {
                 reward = -1;
             }
 
+            maxQValue = getMaxQValue();
+
             // the equation
-            double newQValue = qValue + learningRate * (reward + discountFactor * getMaxQValue(distanceToTarget) - qValue);
+            double newQValue = (1-learningRate) * qValue + learningRate * (reward + discountFactor * maxQValue);
             qValues.put(speed, newQValue);
             
-            if (qValue > maxQValue) {
-                maxQValue = qValue;
+            if (newQValue > maxQValue) {
+                maxQValue = newQValue;
                 bestSpeed = speed;
             }
         }
         
-        // with probability explorationRate, choose a random speed instead of the best speed
+        // with probability explorationRate, choose a random speed between +-0.01 of the best speed
         if (random.nextDouble() < explorationRate) {
-            bestSpeed = random.nextDouble() * 0.5; // choose a random speed between 0 and 0.5
+            double range = 0.1;
+            bestSpeed = bestSpeed + (random.nextDouble() * range * 2 - range);
+
+            // set the speed to the maximum or minimum speed if it is too high or too low
+            if(bestSpeed < 0.01){
+                bestSpeed = 0.01;
+            } else if(bestSpeed > leader.getFormation(TowerGame.getAllFormations()).getFormationSpeed()){
+                bestSpeed = leader.getFormation(TowerGame.getAllFormations()).getFormationSpeed();
+            }
         }
         
         return bestSpeed;
     }
     
-    private double getMaxQValue(double distanceToTarget) {
+    private double getMaxQValue() {
         double maxQValue = Double.NEGATIVE_INFINITY;
         
         // iterate over all speeds and get the maximum Q-value based on the distance to the target
-        for (Map.Entry<Double, Double> entry : qValues.entrySet()) {
-            double qValue = entry.getValue();
+        for (int i = 0; i < qValues.size(); i++) {
+            double qValue = (double) qValues.values().toArray()[i];
             
-            if (distanceToTarget < 100) {
-                // if the distance to the target is less than 100, add a bonus to the Q-value
-                qValue += 0.1;
+            if (leader != null) {
+                //if 3 hit in a row, add a bonus to the Q-value
+                if(leader.getFormation(TowerGame.getAllFormations()).hitInARow(3)) {
+                    qValue += 0.1;
+                }
             }
             
             if (qValue > maxQValue) {

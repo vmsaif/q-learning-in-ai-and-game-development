@@ -1,12 +1,13 @@
-
 /* -----------------------------------------------------------------------------
     Author: Saif Mahmud
-    Date: 2023-17-07
+    Date: 2023-06-08 (yyyy-dd-mm)
     Course: COMP 452
     Student ID: 3433058
-    Assignment: 1
-    Description: Creating a tower defense game with the implementation of Basic steering behaviors such as wander, arrive, flee and a complex steering behavior of formation.
-    Class Description: This class creates the enemies.
+    Assignment: 3
+    Question: 2
+    Description: 
+    
+    This class is responsible for the enemy objects. 
 */
 
 import java.awt.Color;
@@ -69,11 +70,11 @@ public class Enemy {
         distanceBetweenEnemies = 55;
         // random between 300 and 200
         leaderDistanceFromCenterMax = 300;
-        leaderDistanceFromCenterMin = 100;
+        leaderDistanceFromCenterMin = 150;
         leaderDistanceFromCenter = random.nextInt(leaderDistanceFromCenterMax - leaderDistanceFromCenterMin) + leaderDistanceFromCenterMin;
-        // 
+        
         leaderMovingDirectionRandomizer = random.nextInt(101);
-        if(leaderMovingDirectionRandomizer > 75) {
+        if(leaderMovingDirectionRandomizer > 75 ) {
             movingInAngle = 85;
             movingFixedAngle = 90;
         } else {
@@ -157,7 +158,7 @@ public class Enemy {
                     ySpeed = -ySpeed;
                 }
             } else if(arriving){ // meaning, arriving to a target.
-                Formation formation = this.getFormation(game.getAllFormations());
+                Formation formation = this.getFormation(TowerGame.getAllFormations());
                 formation.promoteLeader();
                 Enemy target = formation.getLeader();
 
@@ -243,6 +244,8 @@ public class Enemy {
         double dx = game.getCenterX() - x;
         double dy = game.getCenterY() - y;
         angle = Math.toDegrees(Math.atan2(-dy, -dx));
+        leaderXSpeed = maxSpeed/2;
+        leaderYSpeed = maxSpeed/2;
         flee = true;
     }
     
@@ -318,11 +321,15 @@ public class Enemy {
     }
 
     public double getLeaderXSpeed(){
-    return leaderXSpeed;
+        return leaderXSpeed;
     }
 
     public double getLeaderYSpeed(){
         return leaderYSpeed;
+    }
+
+    public double getLeaderSpeed(){
+        return (leaderXSpeed + leaderYSpeed)/2;
     }
 
     public double getDistanceToTarget() {
@@ -338,4 +345,6 @@ public class Enemy {
         leaderXSpeed = bestSpeedX;
         leaderYSpeed = bestSpeedY;
     }
+
+    
 }//class
