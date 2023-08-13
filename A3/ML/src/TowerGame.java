@@ -85,7 +85,7 @@ public class TowerGame extends JPanel {
         
         //how many times whole enemy set will be spawned
         spawnCount = 1;
-        numberOfEnemySpawnInOneSet = 20; 
+        numberOfEnemySpawnInOneSet = 12; 
 
         // or increase the tower health
         towerHealth = 2000; // I think 2000 is a good number to see the adjustments of the q learning algorithm
@@ -140,7 +140,7 @@ public class TowerGame extends JPanel {
 
 
         //start background music
-        // playSound(bgMusic);
+        playSound(bgMusic);
 
         // add mouse motion listener to the panel
         addMouseListener(new MouseAdapter() {
@@ -415,16 +415,16 @@ public class TowerGame extends JPanel {
 
         Boolean result = false;
 
-        // // check if the tower's health is 0 or less
-        // if (towerHealth <= 0) {
-        //     timer.stop();
-        //     loose = true;
-        //     result = true;
-        // } else if(enemiesSpawned && enemies.size() == 0){ // check if all enemies are dead
-        //     timer.stop();
-        //     result = true;
-        //     win = true;
-        // }
+        // check if the tower's health is 0 or less
+        if (towerHealth <= 0) {
+            timer.stop();
+            loose = true;
+            result = true;
+        } else if(enemiesSpawned && enemies.size() == 0){ // check if all enemies are dead
+            timer.stop();
+            result = true;
+            win = true;
+        }
 
         return result;
     }
