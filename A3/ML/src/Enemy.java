@@ -1,10 +1,7 @@
 /* -----------------------------------------------------------------------------
     Author: Saif Mahmud
     Date: 2023-06-08 (yyyy-dd-mm)
-    Course: COMP 452
-    Student ID: 3433058
-    Assignment: 3
-    Question: 2
+
     Description: 
     
     This class is responsible for the enemy objects. 

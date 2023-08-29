@@ -1,13 +1,8 @@
 /* -----------------------------------------------------------------------------
     Author: Saif Mahmud
     Date: 2023-06-08 (yyyy-dd-mm)
-    Course: COMP 452
-    Student ID: 3433058
-    Assignment: 3
-    Question: 2
-    Description: 
-    
-    QLearning class to implement the Q-learning algorithm.
+
+    Description: QLearning class to implement the Q-learning algorithm.
 */
 import java.util.HashMap;
 import java.util.Map;

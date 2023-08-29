@@ -1,13 +1,6 @@
 /* -----------------------------------------------------------------------------
     Author: Saif Mahmud
     Date: 2023-06-08 (yyyy-dd-mm)
-    Course: COMP 452
-    Student ID: 3433058
-    Assignment: 3
-    Question: 2
-    Description: 
-    
-    This program is a tower defense game.
 */
 import java.awt.Color;
 import java.awt.Font;
